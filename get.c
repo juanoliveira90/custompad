@@ -31,8 +31,8 @@ void get_controllers()
 			{
 				count++;
 				ioctl(fd, EVIOCGNAME(sizeof(name)), name);
-				arr[count-1].name = name;
-				arr[count-1].path = path;
+				arr[count-1].name = strdup(name);
+				arr[count-1].path = strdup(path);
 				//printf("[debug]%s\n", arr[count].name);
 			}
 			close(fd);
@@ -49,12 +49,11 @@ void display_controllers()
 {
 	for (int i = 0; i < len; i++)
 	{
-		if (arr[i].name == NULL)
+		if (arr[i].name != NULL)
 		{
-			printf("seg fault\n");
-			return;
+			printf("%d. %s\n", i, arr[i].name);
 		}
-		printf("%s\n", arr[i].name);
+		return;
 	}
 }
 
