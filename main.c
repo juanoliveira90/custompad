@@ -126,6 +126,17 @@ int create_controller()
 	ioctl(fd, UI_SET_EVBIT, EV_KEY);
 	ioctl(fd, UI_SET_KEYBIT, BTN_SOUTH);
 	ioctl(fd, UI_SET_KEYBIT, BTN_EAST);
+	ioctl(fd, UI_SET_KEYBIT, BTN_NORTH);
+	ioctl(fd, UI_SET_KEYBIT, BTN_WEST);
+	ioctl(fd, UI_SET_KEYBIT, BTN_TL);
+	ioctl(fd, UI_SET_KEYBIT, BTN_TR);
+	ioctl(fd, UI_SET_KEYBIT, BTN_TL2);
+	ioctl(fd, UI_SET_KEYBIT, BTN_TR2);
+	ioctl(fd, UI_SET_KEYBIT, BTN_SELECT);
+	ioctl(fd, UI_SET_KEYBIT, BTN_START);
+	ioctl(fd, UI_SET_KEYBIT, BTN_MODE);
+	ioctl(fd, UI_SET_KEYBIT, BTN_THUMBL);
+	ioctl(fd, UI_SET_KEYBIT, BTN_THUMBR);
 	
 	memset(&usetup, 0, sizeof(usetup));
 	usetup.id.bustype = BUS_USB;
