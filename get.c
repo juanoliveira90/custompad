@@ -31,6 +31,7 @@ void get_controllers()
 			{
 				count++;
 				ioctl(fd, EVIOCGNAME(sizeof(name)), name);
+				arr[count-1].index = count;
 				arr[count-1].name = strdup(name);
 				arr[count-1].path = strdup(path);
 				//printf("[debug]%s\n", arr[count].name);
@@ -51,10 +52,11 @@ void display_controllers()
 	{
 		if (arr[i].name != NULL)
 		{
-			printf("%d. %s\n", i, arr[i].name);
+			printf("%d. %s: %s\n", i+1, arr[i].name, arr[i].path);
 		}
 		return;
 	}
+	return;
 }
 
 

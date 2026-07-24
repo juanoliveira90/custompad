@@ -17,20 +17,34 @@ void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
 
 // options
-void list_options();
 int create_controller();
-//void remap(int fd, char* path);
+void remap(int fd, char* path);
 
 void clear_screen();
 
-// TODO: create a menu with greeting and that displays the available controllers
 int main (int argc, char *argv[]) 
 {
-	//clear_screen();
+	clear_screen();
 	printf("====== Welcome to CustomPad! ======\n\n");
 	printf("## Here's a list of available controllers:\n");
 	get_controllers();
 	display_controllers();
+
+	int choice = 0;
+	printf("\n## Choose one controller to edit: ");
+	scanf("%d", &choice);
+
+	for (int i = 0; i < choice; i++)
+	{
+		if (choice == arr[i].index)
+		{
+			int fd = create_controller();
+			remap(fd, arr[i].path);
+			return 0;
+		}
+	}
+	return 0;
+
 }
 
 void clear_screen() // ANSI escape sequences
@@ -66,23 +80,19 @@ int create_controller()
 	return fd;
 }
 
-/*void remap(int fd, char* path)
+void remap(int fd, char* path)
 {
     // 1. read raw device & apply remapping
 	ssize_t n;
 	struct input_event ev;
 	struct input_event res;
 	
-	char **paths = get_controllers_path();
-
 	int raw_fd = open(path, O_RDONLY); 
 	if (raw_fd == -1) 
 	{
-		perror("error when opening %s\n", path);
-		exit(EXIT_FAILURE);
+		printf("error when opening %s\n", path);
+		return;
 	}
-
-	// TODO: get real data from the user and remap it
 
 	while (1)
 	{
@@ -100,16 +110,7 @@ int create_controller()
 		}
 	
 	}
-}*/
-
-
-void list_options()
-{
-	printf("\n[OPTIONS]\n");
-	printf("-h -> list options\n");
-	printf("-l -> list controllers\n");
 }
-
 
 void emit(int fd, int type, int code, int val)
 {

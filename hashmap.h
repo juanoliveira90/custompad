@@ -6,6 +6,7 @@
 
 typedef struct 
 {
+    int index;
     char* name;  
     char* path; 
 } Gamepad;    
