@@ -43,7 +43,62 @@ int main (int argc, char *argv[])
 		if (choice == arr[i].index)
 		{
 			int fd = create_controller();
-			remap(fd, arr[i].path);
+			int position = map_index_to_virtual(choice);
+			default_map(position);
+			
+			int schoice;
+			printf("\n## What do you want to change?\n");
+			printf("1. Remap\n");
+			printf("2. Deadzone\n");
+			scanf("%d", &schoice);
+		
+			switch (schoice)
+			{
+				case 1:
+					ssize_t n;
+					int count = 0;
+					int finput = 0;
+					int sinput = 0;
+					struct input_event res;
+					struct input_event ev;
+					
+					int raw_fd = open_raw_device(arr[i].path);
+					printf("\n## You'll press two buttons:\n"); 
+					printf("- the first one is the original button.\n");
+					printf("- the second one is the new value of the last button you pressed.\n");
+					fflush(stdout);
+
+					while (true)
+					{
+						
+						n = read(raw_fd, &ev, sizeof(struct input_event));
+						if (ev.type == EV_KEY)
+						{
+							if (count == 0 && ev.value == 1)
+							{
+								if (ev.code == 308)	finput = ev.code - 1;
+								else finput = ev.code;
+								 
+								count++;
+							}
+							else if (count == 1 && ev.value == 1) 
+							{
+								if (ev.code == 307)	sinput = ev.code + 1;
+								else sinput = ev.code;
+								
+								count++;
+								break;
+							}
+						}
+					}
+					arr_virtual[i].map[finput] = sinput;
+					printf("\nRemap complete!");
+					printf("\nfinput -> %d\n", finput);
+					printf("sinput -> %d\n", sinput);
+
+					// emit now for testing
+					emit_remapped(fd, raw_fd, position);
+			}
 			return 0;
 		}
 	}
