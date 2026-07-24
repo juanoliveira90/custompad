@@ -11,10 +11,14 @@
 
 #define MICROSOFT_VENDOR 0x045E
 #define X360_CONTROLLER 0x028E
+Virtual arr_virtual[10];
 
 
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
+void emit_remapped(int fd, int raw_fd, int index);
+int open_raw_device(char* path);
+int map_index_to_virtual(int index);
 
 // options
 int create_controller();
@@ -80,35 +84,50 @@ int create_controller()
 	return fd;
 }
 
-void remap(int fd, char* path)
+int map_index_to_virtual(int index)
 {
-    // 1. read raw device & apply remapping
-	ssize_t n;
-	struct input_event ev;
-	struct input_event res;
-	
+	int i;
+	for (i = 0; i < len; i++)
+	{
+		if (arr_virtual[i].address == NULL)
+		{
+			arr_virtual[i].index = index;
+			break;
+		}
+	}
+	return i;
+}
+
+int open_raw_device(char* path)
+{
 	int raw_fd = open(path, O_RDONLY); 
 	if (raw_fd == -1) 
 	{
 		printf("error when opening %s\n", path);
-		return;
+		return 0;
 	}
+	return raw_fd;
+}	
+
+
+void emit_remapped(int fd, int raw_fd, int index)
+{
+	ssize_t n;
+	struct input_event ev;
+	struct input_event res;
 
 	while (1)
 	{
 		res = read_input(raw_fd, n, ev); 
-		// simplified mapping
-		if (res.code == 0x130) 
+
+		if (res.type == EV_KEY)
 		{
-			emit(fd, EV_KEY, 0x131, 1);
+			int mapped = arr_virtual[index].map[res.code];
+			printf("%d | ", mapped);
+			
+			emit(fd, EV_KEY, mapped, res.value);
 			emit(fd, EV_SYN, SYN_REPORT, 0);
 		}
-		if (res.code == 0x130 && res.value == 0) 
-		{
-			emit(fd, EV_KEY, 0x131, 0);
-			emit(fd, EV_SYN, SYN_REPORT, 0);
-		}
-	
 	}
 }
 
