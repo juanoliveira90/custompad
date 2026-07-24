@@ -6,6 +6,17 @@
 Gamepad arr[10];
 int len = 10;
 
+
+void default_map(int index)
+{
+    for (int i = 0; i < KEY_MAX; i++)
+    {
+        arr_virtual[index].map[i] = i;
+    }
+    arr_virtual[index].map[BTN_NORTH] = BTN_WEST;
+    arr_virtual[index].map[BTN_WEST] = BTN_NORTH;
+}
+
 void push(char* name, char* path)
 {
     for (int i = 0; i < len; i++)
