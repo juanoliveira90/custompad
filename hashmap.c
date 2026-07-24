@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "hashmap.h"
 
 Gamepad arr[10];
@@ -13,8 +14,11 @@ void push(char* name, char* path)
         {
             arr[i].name = name;
             arr[i].path = path;
+            return;
         }
     }
+    printf("You hit the number of controllers limit\n");
+    return;
     
 }
 
