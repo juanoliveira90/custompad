@@ -33,15 +33,35 @@ void push(char* name, char* path)
     
 }
 
-void get(char* name)
+char* get_path(char* name)
 {
     for (int i = 0; i < len; i++)
     {
         if (strcmp(name, arr[i].name) == 0)
         {
-            printf("path -> %s\n", arr[i].path);
-            return;
+            return arr[i].path;
         }
     }
-    return;
+}
+
+char* get_name(char* path)
+{
+    for (int i = 0; i < len; i++)
+    {
+        if (strcmp(path, arr[i].path) == 0)
+        {
+            return arr[i].name;
+        }
+    }
+}
+
+int get_index(char* path)
+{
+    for (int i = 0; i < len; i++)
+    {
+        if (strcmp(path, arr[i].path) == 0)
+        {
+            return arr[i].index;
+        }
+    }
 }
