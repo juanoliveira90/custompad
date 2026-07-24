@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <linux/input.h>
 
 typedef struct 
 {
@@ -11,10 +12,22 @@ typedef struct
     char* path; 
 } Gamepad;    
 
+typedef struct
+{
+    int* address;
+    int index;
+    int map[KEY_MAX + 1];
+} Virtual;
+
 extern Gamepad arr[10];
+extern Virtual arr_virtual[10];
 extern int len;
 
 void push(char* name, char* path);
-void get(char* name);
+char* get_path(char* name);
+char* get_name(char* path);
+int get_index(char* path);
+
+
 
 #endif
