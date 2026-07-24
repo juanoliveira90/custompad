@@ -167,6 +167,7 @@ int map_index_to_virtual(int index)
 int open_raw_device(char* path)
 {
 	int raw_fd = open(path, O_RDONLY); 
+	ioctl(raw_fd, EVIOCGRAB, 1); 
 	if (raw_fd == -1) 
 	{
 		printf("error when opening %s\n", path);
