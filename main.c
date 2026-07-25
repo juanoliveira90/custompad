@@ -38,8 +38,16 @@ InputMap map[] = {
 	{ "BTN_MODE", BTN_MODE },						// Xbox Guide button
 	{ "BTN_THUMBL", BTN_THUMBL },					// Left stick click (LS)
 	{ "BTN_THUMBR", BTN_THUMBR },					// Reft stick click (RS)
-	{ "BTN_TRIGGER_HAPPY", BTN_TRIGGER_HAPPY },		// Back button 1
-	{ "BTN_TRIGGER_HAPPY1", BTN_TRIGGER_HAPPY1 },	// Back button 2
+	
+	// Extra buttons
+	{ "BTN_TRIGGER_HAPPY", BTN_TRIGGER_HAPPY },		
+	{ "BTN_TRIGGER_HAPPY1", BTN_TRIGGER_HAPPY1 },	
+	
+	// Rear buttons; 2 is bottom
+	{ "BTN_GRIPR", BTN_GRIPR },
+	{ "BTN_GRIPR", BTN_GRIPR2 },
+	{ "BTN_GRIPL", BTN_GRIPL },
+	{ "BTN_GRIPL", BTN_GRIPL2 },
 };
 
 int main (int argc, char *argv[]) 
@@ -119,6 +127,13 @@ int create_controller()
 	ioctl(fd, UI_SET_KEYBIT, BTN_MODE);
 	ioctl(fd, UI_SET_KEYBIT, BTN_THUMBL);
 	ioctl(fd, UI_SET_KEYBIT, BTN_THUMBR);
+	ioctl(fd, UI_SET_KEYBIT, BTN_TRIGGER_HAPPY);
+	ioctl(fd, UI_SET_KEYBIT, BTN_TRIGGER_HAPPY1);
+	ioctl(fd, UI_SET_KEYBIT, BTN_GRIPL);
+	ioctl(fd, UI_SET_KEYBIT, BTN_GRIPL2);
+	ioctl(fd, UI_SET_KEYBIT, BTN_GRIPR);
+	ioctl(fd, UI_SET_KEYBIT, BTN_GRIPR2);
+	
 	
 	memset(&usetup, 0, sizeof(usetup));
 	usetup.id.bustype = BUS_USB;
