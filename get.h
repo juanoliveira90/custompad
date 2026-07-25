@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <linux/input.h>
 
-#include "hashmap.h"
+#include "controller.h"
 
 #define BITS_PER_LONG (8 * sizeof(unsigned long))
 #define ARR_SIZE(key) (((key) / BITS_PER_LONG) + 1)
