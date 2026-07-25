@@ -17,7 +17,7 @@ Virtual arr_virtual[10];
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
 void emit_remapped(int fd, int raw_fd, int index);
-int open_raw_device(char* path);
+int open_raw_device_and_hide_it(char* path);
 int map_index_to_virtual(int index);
 
 // options
@@ -164,7 +164,7 @@ int map_index_to_virtual(int index)
 	return i;
 }
 
-int open_raw_device(char* path)
+int open_raw_device_and_hide_it(char* path)
 {
 	int raw_fd = open(path, O_RDONLY); 
 	ioctl(raw_fd, EVIOCGRAB, 1); 
