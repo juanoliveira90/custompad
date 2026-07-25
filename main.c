@@ -26,84 +26,66 @@ void remap(int fd, char* path);
 
 void clear_screen();
 
+InputMap map[] = {
+	{ "BTN_SOUTH", BTN_SOUTH },  					// Xbox A
+    { "BTN_EAST", BTN_EAST },   					// Xbox B
+    { "BTN_WEST", BTN_WEST },   					// Xbox Y
+    { "BTN_NORTH", BTN_NORTH },						// Xbox X
+	{ "BTN_TL", BTN_TL },							// Left bumper (LB)
+	{ "BTN_TR", BTN_TR },  							// Right bumper (RB)
+	{ "BTN_SELECT", BTN_SELECT },					// Back
+	{ "BTN_START", BTN_START },						// Start
+	{ "BTN_MODE", BTN_MODE },						// Xbox Guide button
+	{ "BTN_THUMBL", BTN_THUMBL },					// Left stick click (LS)
+	{ "BTN_THUMBR", BTN_THUMBR },					// Reft stick click (RS)
+	{ "BTN_TRIGGER_HAPPY", BTN_TRIGGER_HAPPY },		// Back button 1
+	{ "BTN_TRIGGER_HAPPY1", BTN_TRIGGER_HAPPY1 },	// Back button 2
+};
+
 int main (int argc, char *argv[]) 
 {
-	clear_screen();
-	printf("====== Welcome to CustomPad! ======\n\n");
-	printf("## Here's a list of available controllers:\n");
-	get_controllers();
-	display_controllers();
+	get_controllers(); 										/* get controllers and store them in array */
+	int fd = create_controller();							/* create virtual controller */
+	int position = map_index_to_virtual(0);					/* make both array indexes be the same */
+	default_map(position);									/* apply xbox mapping */
+	int raw_fd = open_raw_device_and_hide_it(arr[0].path);	/* open raw device */
 
-	int choice = 0;
-	printf("\n## Choose one controller to edit: ");
-	scanf("%d", &choice);
-
-	for (int i = 0; i < choice; i++)
+	if (argc == 1) // temporary: get first controller available
 	{
-		if (choice == arr[i].index)
-		{
-			int fd = create_controller();
-			int position = map_index_to_virtual(choice);
-			default_map(position);
-			
-			int schoice;
-			printf("\n## What do you want to change?\n");
-			printf("1. Remap\n");
-			printf("2. Deadzone\n");
-			scanf("%d", &schoice);
-		
-			switch (schoice)
-			{
-				case 1:
-					ssize_t n;
-					int count = 0;
-					int finput = 0;
-					int sinput = 0;
-					struct input_event res;
-					struct input_event ev;
-					
-					int raw_fd = open_raw_device(arr[i].path);
-					printf("\n## You'll press two buttons:\n"); 
-					printf("- the first one is the original button.\n");
-					printf("- the second one is the new value of the last button you pressed.\n");
-					fflush(stdout);
+		emit_remapped(fd, raw_fd, position);
+	}
 
-					while (true)
-					{
-						
-						n = read(raw_fd, &ev, sizeof(struct input_event));
-						if (ev.type == EV_KEY)
-						{
-							if (count == 0 && ev.value == 1)
-							{
-								if (ev.code == 308)	finput = ev.code - 1;
-								else finput = ev.code;
-								 
-								count++;
-							}
-							else if (count == 1 && ev.value == 1) 
-							{
-								if (ev.code == 307)	sinput = ev.code + 1;
-								else sinput = ev.code;
-								
-								count++;
-								break;
-							}
-						}
-					}
-					arr_virtual[i].map[finput] = sinput;
-					printf("\nRemap complete!");
-					printf("\nfinput -> %d\n", finput);
-					printf("sinput -> %d\n", sinput);
+	
+	if (strcmp(argv[1], "-m") == 0)
+	{
+		int original;
+		int mapped;
 
-					// emit now for testing
-					emit_remapped(fd, raw_fd, position);
-			}
+		if (argc != 4)
+		{ 
+			printf("\nmapping usage: ./prog -m [original key button] [mapped key button]");
 			return 0;
 		}
-	}
-	return 0;
+		for (int i = 0; i < 4; i++)
+		{
+			if (strcmp(argv[2], map[i].name) == 0)
+				original = map[i].value;
+			if (strcmp(argv[3], map[i].name) == 0)
+				mapped = map[i].value;	
+		}
+		arr_virtual[0].map[original] = mapped;
 
+		printf("Remap complete! %s is now %s\n", argv[2], argv[3]);
+		fflush(stdout);
+		emit_remapped(fd, raw_fd, position);
+	}
+
+	if (strcmp(argv[1], "-d") == 0)
+	{
+		// TODO: deadzone handling
+	}
+
+	return 0;
 }
 
 void clear_screen() // ANSI escape sequences
