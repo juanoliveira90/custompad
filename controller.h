@@ -1,9 +1,12 @@
-#ifndef HASHMAP_H
-#define HASHMAP_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include <string.h>
 #include <stdio.h>
 #include <linux/input.h>
+
+#define MICROSOFT_VENDOR 0x045E
+#define X360_CONTROLLER 0x028E
 
 typedef struct 
 {
@@ -34,7 +37,7 @@ void push(char* name, char* path);
 char* get_path(char* name);
 char* get_name(char* path);
 int get_index(char* path);
-
+int create_controller();
 
 
 #endif
