@@ -102,13 +102,7 @@ int main (int argc, char *argv[])
 		// 1. get desired thumbstick from user
 		char* thumbside = argv[2];
 		// 2. get desired deadzone from user
-		typedef struct
-		{
-			int LS_radial_deadzone;
-			int RS_radial_deadzone;
-			int LS_axial_deadzone;
-			int RS_axial_deadzone;
-		} Deadzone;
+		
 		Deadzone deadzone;
 		if (strcmp(thumbside, "LS") == 0) deadzone.LS_radial_deadzone = atoi(argv[3]);
 		else if (strcmp(thumbside, "RS") == 0) deadzone.RS_radial_deadzone = atoi(argv[3]);

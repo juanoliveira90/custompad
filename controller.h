@@ -28,6 +28,14 @@ typedef struct
     int value;
 } InputMap;
 
+typedef struct
+{
+    int LS_radial_deadzone;
+    int RS_radial_deadzone;
+    int LS_axial_deadzone;
+    int RS_axial_deadzone;
+} Deadzone;
+
 extern Gamepad arr[10];
 extern Virtual arr_virtual[10];
 extern int len;
