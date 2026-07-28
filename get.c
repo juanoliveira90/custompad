@@ -1,7 +1,7 @@
 #include "get.h"
-#include "hashmap.h"
+#include "controller.h"
 
-void get_controllers()
+void get_controllers_and_store_them_in_array()
 {
 	DIR *dir;
 	struct dirent *entry;

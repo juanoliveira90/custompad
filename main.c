@@ -52,15 +52,15 @@ InputMap map[] = {
 
 int main (int argc, char *argv[]) 
 {
-	get_controllers(); 										/* get controllers and store them in array */
-	int fd = create_controller();							/* create virtual controller */
-	int position = map_index_to_virtual(0);					/* make both array indexes be the same */
+	get_controllers_and_store_them_in_array();
+	int fd = create_controller();							
+	int position = map_index_to_virtual(0);					// TODO: get index value dynamically
 	default_map(position);									/* apply xbox mapping */
-	int raw_fd = open_raw_device_and_hide_it(arr[0].path);	/* open raw device */
+	int raw_fd = open_raw_device_and_hide_it(arr[0].path);
+	
 
 	if (argc == 1) // temporary: get first controller available
 	{
-		emit_remapped(fd, raw_fd, position);
 	}
 
 	

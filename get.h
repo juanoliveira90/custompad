@@ -16,7 +16,7 @@
 #define BITS_PER_LONG (8 * sizeof(unsigned long))
 #define ARR_SIZE(key) (((key) / BITS_PER_LONG) + 1)
 
-void get_controllers();
+void get_controllers_and_store_them_in_array();
 void display_controllers();
 struct input_event read_input(int fd, ssize_t n, struct input_event ev);
 
