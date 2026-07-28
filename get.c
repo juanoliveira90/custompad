@@ -54,7 +54,7 @@ void display_controllers()
 		{
 			printf("%d. %s: %s\n", i+1, arr[i].name, arr[i].path);
 		}
-		return;
+		continue;
 	}
 	return;
 }
