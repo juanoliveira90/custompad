@@ -15,7 +15,7 @@ Virtual arr_virtual[10];
 
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
-void emit_remapped(int fd, int raw_fd, int index, int LS_radial_deadzone, int RS_radial_deadzone);
+void emit_remapped(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone anti_deadzone);
 int open_raw_device_and_hide_it(char* path);
 int map_index_to_virtual(int index);
 int clamp_stick(long v);
@@ -58,12 +58,13 @@ int main (int argc, char *argv[])
 	default_map(position);									/* apply xbox mapping */
 	int raw_fd = open_raw_device_and_hide_it(arr[0].path);
 	
-	int ld = 0;
-	int rd = 0;
+	Deadzone deadzone = {0};
+	AntiDeadzone anti_deadzone = {0};
+
 
 	if (argc == 1) // temporary: get first controller available
 	{
-		emit_remapped(fd, raw_fd, position, ld, rd);
+		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
 	}
 
 	
@@ -88,29 +89,42 @@ int main (int argc, char *argv[])
 
 		printf("Remap complete! %s is now %s\n", argv[2], argv[3]);
 		fflush(stdout);
-		emit_remapped(fd, raw_fd, position, ld, rd);
+		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
 	}
 
 	if (strcmp(argv[1], "-d") == 0)
 	{
 		if (argc != 4)
 		{ 
+			// TODO: convert user input (0.00 to 1.00) into raw value beforep assing it to the deadzone function
 			printf("\nmapping usage: ./prog -d [desired thumbstick (left or right)] [desired value (0.00 to 1.00)]");
 			return 0;
 		}
 		// TODO: deadzone handling
-		// 1. get desired thumbstick from user
 		char* thumbside = argv[2];
-		// 2. get desired deadzone from user
 		
-		Deadzone deadzone;
-		if (strcmp(thumbside, "LS") == 0) deadzone.LS_radial_deadzone = atoi(argv[3]);
-		else if (strcmp(thumbside, "RS") == 0) deadzone.RS_radial_deadzone = atoi(argv[3]);
+		if (strcmp(thumbside, "LS") == 0) deadzone.radial_LS = atoi(argv[3]);
+		else if (strcmp(thumbside, "RS") == 0) deadzone.radial_RS = atoi(argv[3]);
 
-		// 3. apply that deadzone to virtual controller
-		// 4. normalize axis input (from raw integers to a range of 1.00/0.00)
-		// 5. emit virtal controller
-		emit_remapped(fd, raw_fd, position, deadzone.LS_radial_deadzone, deadzone.RS_radial_deadzone);
+		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
+	}
+
+	if (strcmp(argv[1], "-ad") == 0)
+	{
+		// TODO: make this garbage code work. especially emit_remapped
+		if (argc != 4)
+		{ 
+			// TODO: convert user input (0.00 to 1.00) into raw value before passing it to the deadzone function
+			printf("\aanti-deadzone usage: ./prog -ad [desired thumbstick (left or right)] [desired value (0.00 to 1.00)]");
+			return 0;
+		}
+
+		char* thumbside = argv[2];
+		
+		if (strcmp(thumbside, "LS") == 0) anti_deadzone.radial_LS = atoi(argv[3]);
+		else if (strcmp(thumbside, "RS") == 0) anti_deadzone.radial_RS = atoi(argv[3]);
+
+		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
 	}
 
 	return 0;
@@ -157,7 +171,7 @@ int clamp_stick(long v)
 	return (int)v;
 }
 
-void emit_remapped(int fd, int raw_fd, int index, int LS_radial_deadzone, int RS_radial_deadzone)
+void emit_remapped(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone A)
 {
 	ssize_t n;
 	struct input_event ev;
@@ -168,11 +182,17 @@ void emit_remapped(int fd, int raw_fd, int index, int LS_radial_deadzone, int RS
 	int RS_cached_x = 0;
 	int RS_cached_y = 0;
 
-	if (LS_radial_deadzone < 0) LS_radial_deadzone = 0;
-	if (LS_radial_deadzone >= STICK_MAX) LS_radial_deadzone = STICK_MAX - 1;
+	if (deadzone.radial_LS < 0) deadzone.radial_LS = 0;
+	if (deadzone.radial_LS >= STICK_MAX) deadzone.radial_LS = STICK_MAX - 1;
 	
-	if (RS_radial_deadzone < 0) RS_radial_deadzone = 0;
-	if (RS_radial_deadzone >= STICK_MAX) RS_radial_deadzone = STICK_MAX - 1;
+	if (deadzone.radial_RS < 0) deadzone.radial_RS = 0;
+	if (deadzone.radial_RS >= STICK_MAX) deadzone.radial_RS = STICK_MAX - 1;
+
+	if (A.radial_LS < 0) A.radial_LS = 0;
+	if (A.radial_LS > STICK_MAX) A.radial_LS = STICK_MAX;
+
+	if (A.radial_RS < 0) A.radial_RS = 0;
+	if (A.radial_RS > STICK_MAX) A.radial_RS = STICK_MAX;
 
 	while (1)
 	{
@@ -209,10 +229,12 @@ void emit_remapped(int fd, int raw_fd, int index, int LS_radial_deadzone, int RS
 				int LS_out_x = 0;
 				int LS_out_y = 0;
 
-				if (LS_magnitude > LS_radial_deadzone)
+				if (LS_magnitude > deadzone.radial_LS)
 				{
-						double LS_scale = (LS_magnitude - LS_radial_deadzone) / (STICK_MAX - LS_radial_deadzone);
+						double LS_scale = (LS_magnitude - deadzone.radial_LS) / (STICK_MAX - deadzone.radial_LS);
 						if (LS_scale > 1.0) LS_scale = 1.0;
+						LS_scale = (double)A.radial_LS / STICK_MAX
+							+ (1.0 - (double)A.radial_LS / STICK_MAX) * LS_scale;
 
 						LS_out_x = clamp_stick(lround((LS_cached_x / LS_magnitude) * LS_scale * STICK_MAX));
 						LS_out_y = clamp_stick(lround((LS_cached_y / LS_magnitude) * LS_scale * STICK_MAX));
@@ -229,10 +251,12 @@ void emit_remapped(int fd, int raw_fd, int index, int LS_radial_deadzone, int RS
 				int RS_out_x = 0;
 				int RS_out_y = 0;
 
-				if (RS_magnitude > RS_radial_deadzone)
+				if (RS_magnitude > deadzone.radial_RS)
 				{
-						double RS_scale = (RS_magnitude - RS_radial_deadzone) / (STICK_MAX - RS_radial_deadzone);
+						double RS_scale = (RS_magnitude - deadzone.radial_RS) / (STICK_MAX - deadzone.radial_RS);
 						if (RS_scale > 1.0) RS_scale = 1.0;
+						RS_scale = (double)A.radial_RS / STICK_MAX
+							+ (1.0 - (double)A.radial_RS / STICK_MAX) * RS_scale;
 
 						RS_out_x = clamp_stick(lround((RS_cached_x / RS_magnitude) * RS_scale * STICK_MAX));
 						RS_out_y = clamp_stick(lround((RS_cached_y / RS_magnitude) * RS_scale * STICK_MAX));

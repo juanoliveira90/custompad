@@ -30,11 +30,20 @@ typedef struct
 
 typedef struct
 {
-    int LS_radial_deadzone;
-    int RS_radial_deadzone;
-    int LS_axial_deadzone;
-    int RS_axial_deadzone;
+    int radial_LS;
+    int radial_RS;
+    int axial_LS;
+    int axial_RS;
 } Deadzone;
+
+typedef struct
+{
+    int radial_LS;
+    int radial_RS;
+    int axial_LS;
+    int axial_RS;
+} AntiDeadzone;
+
 
 extern Gamepad arr[10];
 extern Virtual arr_virtual[10];
