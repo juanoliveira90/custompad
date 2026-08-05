@@ -53,7 +53,7 @@ InputMap map[] = {
 int main (int argc, char *argv[]) 
 {
 	get_controllers_and_store_them_in_array();
-	int fd = create_controller();							
+	int fd = create_controller(arr[0].path);							
 	int position = map_index_to_virtual(0);					// TODO: get index value dynamically
 	default_map(position);									/* apply xbox mapping */
 	int raw_fd = open_raw_device_and_hide_it(arr[0].path);
