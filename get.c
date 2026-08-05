@@ -3,25 +3,26 @@
 
 void get_controllers_and_store_them_in_array()
 {
-	DIR *dir;
-	struct dirent *entry;
 	int fd;
-
+	int count = 0;
+	char path[64];
+	struct dirent *entry;
+	DIR *dir;
+	
 	dir = opendir("/dev/input/");
 	if (dir == NULL) {
 		perror("Error when opening /dev/input/js*");
 		exit(EXIT_FAILURE);
 	}
+	
 	// get everything that starts with event
-	char name[256] = "Unknown";
-	unsigned long mask[ARR_SIZE(BTN_SOUTH)] = {0};
-	char path[64];
-	int count = 0;
-
 	while ((entry = readdir(dir)) != NULL)
 	{
 		if (strncmp(entry->d_name, "event", 5) == 0) 
 		{
+			char name[256] = "Unknown";
+			unsigned long mask[ARR_SIZE(BTN_SOUTH)] = {0};
+
 			snprintf(path, sizeof(path), "/dev/input/%s", entry->d_name);
 			fd = open(path, O_RDONLY);
 			ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(mask)), mask);
