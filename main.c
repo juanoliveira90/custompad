@@ -12,128 +12,40 @@
 
 Virtual arr_virtual[10];
 
-
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
-void emit_remapped(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone anti_deadzone);
+void emit_configured(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone anti_deadzone);
 int open_raw_device_and_hide_it(char* path);
 int map_index_to_virtual(int index);
 int clamp_stick(long v);
 
-// options
-int create_controller();
-void remap(int fd, char* path);
-
-void clear_screen();
-
-InputMap map[] = {
-	{ "BTN_SOUTH", BTN_SOUTH },  					// Xbox A
-    { "BTN_EAST", BTN_EAST },   					// Xbox B
-    { "BTN_WEST", BTN_WEST },   					// Xbox Y
-    { "BTN_NORTH", BTN_NORTH },						// Xbox X
-	{ "BTN_TL", BTN_TL },							// Left bumper (LB)
-	{ "BTN_TR", BTN_TR },  							// Right bumper (RB)
-	{ "BTN_SELECT", BTN_SELECT },					// Back
-	{ "BTN_START", BTN_START },						// Start
-	{ "BTN_MODE", BTN_MODE },						// Xbox Guide button
-	{ "BTN_THUMBL", BTN_THUMBL },					// Left stick click (LS)
-	{ "BTN_THUMBR", BTN_THUMBR },					// Reft stick click (RS)
-	
-	// Extra buttons
-	{ "BTN_TRIGGER_HAPPY", BTN_TRIGGER_HAPPY },		
-	{ "BTN_TRIGGER_HAPPY1", BTN_TRIGGER_HAPPY1 },	
-	
-	// Rear buttons; 2 is bottom
-	{ "BTN_GRIPR", BTN_GRIPR },
-	{ "BTN_GRIPR", BTN_GRIPR2 },
-	{ "BTN_GRIPL", BTN_GRIPL },
-	{ "BTN_GRIPL", BTN_GRIPL2 },
-};
-
 int main (int argc, char *argv[]) 
 {
-	get_controllers_and_store_them_in_array();
-	int fd = create_controller(arr[0].path);							
+	int option;
+	int count = get_controllers_and_store_them_in_array();
+
+	if (count > 1)
+	{
+		printf("What controller do you want to use?\n");
+		for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++) // make arr resize dinamically
+			printf("%d - %s\n", i, arr[i].name);
+
+		scanf("%d", option);
+	}
+
+	int fd = create_controller(arr[option].path);							
 	int position = map_index_to_virtual(0);					// TODO: get index value dynamically
-	default_map(position);									/* apply xbox mapping */
 	int raw_fd = open_raw_device_and_hide_it(arr[0].path);
 	
 	Deadzone deadzone = {0};
 	AntiDeadzone anti_deadzone = {0};
 
-
-	if (argc == 1) // temporary: get first controller available
+	if (argc == 1) // read default.ini
 	{
-		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
-	}
-
-	
-	if (strcmp(argv[1], "-m") == 0)
-	{
-		int original;
-		int mapped;
-
-		if (argc != 4)
-		{ 
-			printf("\nmapping usage: ./prog -m [original key button] [mapped key button]");
-			return 0;
-		}
-		for (int i = 0; i < 4; i++)
-		{
-			if (strcmp(argv[2], map[i].name) == 0)
-				original = map[i].value;
-			if (strcmp(argv[3], map[i].name) == 0)
-				mapped = map[i].value;	
-		}
-		arr_virtual[0].map[original] = mapped;
-
-		printf("Remap complete! %s is now %s\n", argv[2], argv[3]);
-		fflush(stdout);
-		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
-	}
-
-	if (strcmp(argv[1], "-d") == 0)
-	{
-		if (argc != 4)
-		{ 
-			// TODO: convert user input (0.00 to 1.00) into raw value beforep assing it to the deadzone function
-			printf("\nmapping usage: ./prog -d [desired thumbstick (left or right)] [desired value (0.00 to 1.00)]");
-			return 0;
-		}
-		// TODO: deadzone handling
-		char* thumbside = argv[2];
-		
-		if (strcmp(thumbside, "LS") == 0) deadzone.radial_LS = atoi(argv[3]);
-		else if (strcmp(thumbside, "RS") == 0) deadzone.radial_RS = atoi(argv[3]);
-
-		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
-	}
-
-	if (strcmp(argv[1], "-ad") == 0)
-	{
-		// TODO: make this garbage code work. especially emit_remapped
-		if (argc != 4)
-		{ 
-			// TODO: convert user input (0.00 to 1.00) into raw value before passing it to the deadzone function
-			printf("\aanti-deadzone usage: ./prog -ad [desired thumbstick (left or right)] [desired value (0.00 to 1.00)]");
-			return 0;
-		}
-
-		char* thumbside = argv[2];
-		
-		if (strcmp(thumbside, "LS") == 0) anti_deadzone.radial_LS = atoi(argv[3]);
-		else if (strcmp(thumbside, "RS") == 0) anti_deadzone.radial_RS = atoi(argv[3]);
-
-		emit_remapped(fd, raw_fd, position, deadzone, anti_deadzone);
+		emit_configured(fd, raw_fd, position, deadzone, anti_deadzone);
 	}
 
 	return 0;
-}
-
-void clear_screen() // ANSI escape sequences
-{
-	printf("\033[2J\033[1;1H");
-	fflush(stdout);
 }
 
 
@@ -171,7 +83,7 @@ int clamp_stick(long v)
 	return (int)v;
 }
 
-void emit_remapped(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone A)
+void emit_configured(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone A)
 {
 	ssize_t n;
 	struct input_event ev;
