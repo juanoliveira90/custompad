@@ -10,8 +10,6 @@
 #define STICK_MAX 32767
 #define STICK_MIN -32768
 
-Virtual arr_virtual[10];
-
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
 void emit_configured(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone anti_deadzone);
@@ -23,44 +21,26 @@ int main (int argc, char *argv[])
 {
 	int option;
 	int count = get_controllers_and_store_them_in_array();
-
 	if (count > 1)
 	{
 		printf("What controller do you want to use?\n");
-		for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++) // make arr resize dinamically
-			printf("%d - %s\n", i, arr[i].name);
+		for (int i = 0; i < arr_capacity; i++)
+			printf("%d | %s\n", i, arr[i].name);
 
-		scanf("%d", option);
+		scanf("%d", &option);
 	}
-
-	int fd = create_controller(arr[option].path);							
-	int position = map_index_to_virtual(0);					// TODO: get index value dynamically
-	int raw_fd = open_raw_device_and_hide_it(arr[0].path);
+	int fd = create_controller(arr[option].path);
+	int raw_fd = open_raw_device_and_hide_it(arr[option].path);
 	
 	Deadzone deadzone = {0};
 	AntiDeadzone anti_deadzone = {0};
 
 	if (argc == 1) // read default.ini
 	{
-		emit_configured(fd, raw_fd, position, deadzone, anti_deadzone);
+		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
 
 	return 0;
-}
-
-
-int map_index_to_virtual(int index)
-{
-	int i;
-	for (i = 0; i < len; i++)
-	{
-		if (arr_virtual[i].address == NULL)
-		{
-			arr_virtual[i].index = index;
-			break;
-		}
-	}
-	return i;
 }
 
 int open_raw_device_and_hide_it(char* path)
@@ -83,7 +63,7 @@ int clamp_stick(long v)
 	return (int)v;
 }
 
-void emit_configured(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone A)
+void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 {
 	ssize_t n;
 	struct input_event ev;

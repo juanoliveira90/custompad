@@ -1,17 +1,20 @@
 #include "get.h"
 #include "controller.h"
 
-void get_controllers_and_store_them_in_array()
+int get_controllers_and_store_them_in_array()
 {
 	int fd;
 	int count = 0;
 	char path[64];
 	struct dirent *entry;
 	DIR *dir;
-	
+
+	arr_capacity = 1;
+	arr = malloc(arr_capacity * sizeof(arr));
+
 	dir = opendir("/dev/input/");
 	if (dir == NULL) {
-		perror("Error when opening /dev/input/js*");
+		perror("Error when opening /dev/input/*");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -22,8 +25,8 @@ void get_controllers_and_store_them_in_array()
 		{
 			char name[256] = "Unknown";
 			unsigned long mask[ARR_SIZE(BTN_SOUTH)] = {0};
-
 			snprintf(path, sizeof(path), "/dev/input/%s", entry->d_name);
+			
 			fd = open(path, O_RDONLY);
 			ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(mask)), mask);
 			int64_t n = 1;
@@ -31,11 +34,20 @@ void get_controllers_and_store_them_in_array()
 			if (mask[BTN_SOUTH / BITS_PER_LONG] & (n << (BTN_SOUTH % BITS_PER_LONG))) 
 			{
 				count++;
+				if (count > arr_capacity)
+				{
+					arr_capacity = count;
+					Gamepad* tmp = realloc(arr, arr_capacity * sizeof(Gamepad));
+					if (tmp != NULL)
+					{
+						arr = tmp;
+					}
+				}
+ 
 				ioctl(fd, EVIOCGNAME(sizeof(name)), name);
 				arr[count-1].index = count;
 				arr[count-1].name = strdup(name);
 				arr[count-1].path = strdup(path);
-				//printf("[debug]%s\n", arr[count].name);
 			}
 			close(fd);
 		}
@@ -43,19 +55,18 @@ void get_controllers_and_store_them_in_array()
 	if (count == 0)
 	{
 		printf("No controllers found.\n");
-		return;
 	}
+	return count;
 }
 
 void display_controllers()
 {
-	for (int i = 0; i < len; i++)
+	for (int i = 0; i < arr_capacity; i++)
 	{
 		if (arr[i].name != NULL)
 		{
 			printf("%d. %s: %s\n", i+1, arr[i].name, arr[i].path);
 		}
-		continue;
 	}
 	return;
 }

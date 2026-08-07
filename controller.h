@@ -47,12 +47,9 @@ typedef struct
     int axial_RS;
 } AntiDeadzone;
 
+extern Gamepad *arr;
+extern size_t arr_capacity;
 
-extern Gamepad arr[10];
-extern Virtual arr_virtual[10];
-extern int len;
-
-void default_map(int index);
 void push(char* name, char* path);
 char* get_path(char* name);
 char* get_name(char* path);

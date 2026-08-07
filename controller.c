@@ -8,10 +8,9 @@
 
 #include "controller.h"
 
-Gamepad arr[10];
-int len = sizeof(arr) / sizeof(arr[0]);
+Gamepad *arr = NULL;
+size_t arr_capacity = 1;
 
-struct { int code, min, max, fuzz, flat; } ps_axes[] = {
     { ABS_X,      0, 255, 0, 0 },  // left stick X
     { ABS_Y,      0, 255, 0, 0 },  // left stick Y
     { ABS_RX,     0, 255, 0, 0 },  // right stick X
@@ -165,20 +164,9 @@ int create_controller(char* raw_path)
 	return fd;
 }
 
-
-void default_map(int index)
-{
-    for (int i = 0; i < KEY_MAX; i++)
-    {
-        arr_virtual[index].map[i] = i;
-    }
-    arr_virtual[index].map[BTN_NORTH] = BTN_WEST;
-    arr_virtual[index].map[BTN_WEST] = BTN_NORTH;
-}
-
 void push(char* name, char* path)
 {
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < arr_capacity; i++)
     {
         if (arr[i].path == NULL)
         {
@@ -194,7 +182,7 @@ void push(char* name, char* path)
 
 char* get_path(char* name)
 {
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < arr_capacity; i++)
     {
         if (strcmp(name, arr[i].name) == 0)
         {
@@ -205,7 +193,7 @@ char* get_path(char* name)
 
 char* get_name(char* path)
 {
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < arr_capacity; i++)
     {
         if (strcmp(path, arr[i].path) == 0)
         {
@@ -216,7 +204,7 @@ char* get_name(char* path)
 
 int get_index(char* path)
 {
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < arr_capacity; i++)
     {
         if (strcmp(path, arr[i].path) == 0)
         {
