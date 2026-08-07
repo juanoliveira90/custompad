@@ -15,21 +15,7 @@ typedef struct
 {
     int index;
     char* name;  
-    char* path; 
 } Gamepad;    
-
-typedef struct
-{
-    int* address;
-    int index;
-    int map[KEY_MAX + 1];
-} Virtual;
-
-typedef struct
-{
-    char* name;
-    int value;
-} InputMap;
 
 typedef struct
 {

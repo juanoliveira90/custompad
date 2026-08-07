@@ -12,7 +12,7 @@
 
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
-void emit_configured(int fd, int raw_fd, int index, Deadzone deadzone, AntiDeadzone anti_deadzone);
+void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone anti_deadzone);
 int open_raw_device_and_hide_it(char* path);
 int map_index_to_virtual(int index);
 int clamp_stick(long v);
@@ -92,10 +92,7 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 
 		if (res.type == EV_KEY)
 		{
-			int mapped = arr_virtual[index].map[res.code];
-			printf("%d | ", mapped);
-
-			emit(fd, EV_KEY, mapped, res.value);
+			emit(fd, EV_KEY, res.code, res.value);
 			emit(fd, EV_SYN, SYN_REPORT, 0);
 		}
 		if (res.type == EV_ABS)
