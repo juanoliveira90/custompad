@@ -115,7 +115,8 @@ int create_controller(char* raw_path)
 
 	memset(&abs, 0, sizeof(abs));
 
-	if (raw_vendor == MICROSOFT_VENDOR)
+	printf("raw_vendor -> %d\n", raw_vendor);
+	if (raw_vendor == MICROSOFT_VENDOR || raw_vendor == GAMESIR_VENDOR)
 	{
 
 		for (int i = 0; i < sizeof(xb_axes) / sizeof(xb_axes[0]); i++) {
@@ -159,7 +160,6 @@ int create_controller(char* raw_path)
 	strcpy(usetup.name, "Xbox 360 Controller");
 	
 	ioctl(fd, UI_DEV_SETUP, &usetup);
-	
 	ioctl(fd, UI_DEV_CREATE);
 	return fd;
 }

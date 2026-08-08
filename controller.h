@@ -6,8 +6,9 @@
 #include <linux/input.h>
 
 #define SONY_VENDOR      0x054c
-#define NINTENDO_VENDOR  0x57e
+#define NINTENDO_VENDOR  0x057E
 #define MICROSOFT_VENDOR 0x045E
+#define GAMESIR_VENDOR   0x3537
 
 #define X360_CONTROLLER  0x028E
 
