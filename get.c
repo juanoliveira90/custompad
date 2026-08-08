@@ -3,15 +3,21 @@
 
 int get_controllers_and_store_them_in_array()
 {
+	
 	int fd;
 	int count = 0;
 	char path[64];
 	struct dirent *entry;
 	DIR *dir;
-
+	
 	arr_capacity = 1;
 	arr = malloc(arr_capacity * sizeof(arr));
-
+	if (arr == NULL)
+	{
+		printf("error when trying to allocate memory\n");
+		return 1;
+	}
+	
 	dir = opendir("/dev/input/");
 	if (dir == NULL) {
 		perror("Error when opening /dev/input/*");

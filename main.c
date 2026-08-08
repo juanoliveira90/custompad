@@ -29,13 +29,26 @@ int main (int argc, char *argv[])
 
 		scanf("%d", &option);
 	}
-	int fd = create_controller(arr[option].path);
-	int raw_fd = open_raw_device_and_hide_it(arr[option].path);
 	
+	int fd = create_controller(arr[option].path);
+	if (fd < 0)
+	{
+		perror("open");
+		return 1;
+	}
+	
+	int raw_fd = open_raw_device_and_hide_it(arr[option].path);
+	if (raw_fd < 0)
+	{
+		perror("open");
+		return 1;
+	}
+
 	Deadzone deadzone = {0};
 	AntiDeadzone anti_deadzone = {0};
 
-	if (argc == 1) // read default.ini
+	// todo: read a .ini config file
+	if (argc == 1) 
 	{
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
@@ -49,12 +62,11 @@ int open_raw_device_and_hide_it(char* path)
 	ioctl(raw_fd, EVIOCGRAB, 1); 
 	if (raw_fd == -1) 
 	{
-		printf("error when opening %s\n", path);
-		return 0;
+		perror("open");
+		return 1;
 	}
 	return raw_fd;
 }	
-
 
 int clamp_stick(long v)
 {
