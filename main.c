@@ -19,7 +19,7 @@ int clamp_stick(long v);
 
 int main (int argc, char *argv[]) 
 {
-	int option;
+	int option = 0;
 	int count = get_controllers_and_store_them_in_array();
 	if (count > 1)
 	{
@@ -44,6 +44,12 @@ int main (int argc, char *argv[])
 		return 1;
 	}
 
+	for (int i = 0; i < arr_capacity; i++)
+	{
+		free(arr[i].name);
+		free(arr[i].path);
+		free(arr);
+	}
 	Deadzone deadzone = {0};
 	AntiDeadzone anti_deadzone = {0};
 

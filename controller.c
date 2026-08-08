@@ -201,14 +201,3 @@ char* get_name(char* path)
         }
     }
 }
-
-int get_index(char* path)
-{
-    for (int i = 0; i < arr_capacity; i++)
-    {
-        if (strcmp(path, arr[i].path) == 0)
-        {
-            return arr[i].index;
-        }
-    }
-}

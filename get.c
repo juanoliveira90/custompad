@@ -11,7 +11,7 @@ int get_controllers_and_store_them_in_array()
 	DIR *dir;
 	
 	arr_capacity = 1;
-	arr = malloc(arr_capacity * sizeof(arr));
+	arr = malloc(arr_capacity * sizeof(Gamepad));
 	if (arr == NULL)
 	{
 		printf("error when trying to allocate memory\n");
@@ -29,7 +29,7 @@ int get_controllers_and_store_them_in_array()
 	{
 		if (strncmp(entry->d_name, "event", 5) == 0) 
 		{
-			char name[256] = "Unknown";
+			char* name = "Unknown";
 			unsigned long mask[ARR_SIZE(BTN_SOUTH)] = {0};
 			snprintf(path, sizeof(path), "/dev/input/%s", entry->d_name);
 			
@@ -37,6 +37,7 @@ int get_controllers_and_store_them_in_array()
 			ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(mask)), mask);
 			int64_t n = 1;
 
+			// check if BTN_SOUTH is set
 			if (mask[BTN_SOUTH / BITS_PER_LONG] & (n << (BTN_SOUTH % BITS_PER_LONG))) 
 			{
 				count++;
@@ -44,20 +45,27 @@ int get_controllers_and_store_them_in_array()
 				{
 					arr_capacity = count;
 					Gamepad* tmp = realloc(arr, arr_capacity * sizeof(Gamepad));
-					if (tmp != NULL)
+					if (tmp == NULL)
 					{
-						arr = tmp;
+						printf("error when trying to reallocate memory");
+						return 1;
 					}
+					else arr = tmp;
 				}
- 
+ 				
 				ioctl(fd, EVIOCGNAME(sizeof(name)), name);
-				arr[count-1].index = count;
-				arr[count-1].name = strdup(name);
-				arr[count-1].path = strdup(path);
+
+				char* tmp_name = strdup(name);
+				char* tmp_path = strdup(path);
+
+				arr[count-1].name = tmp_name;
+				arr[count-1].path = tmp_path;
 			}
 			close(fd);
 		}
 	}
+	closedir(dir);
+
 	if (count == 0)
 	{
 		printf("No controllers found.\n");
