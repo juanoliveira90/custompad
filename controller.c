@@ -116,7 +116,6 @@ int create_controller(char* raw_path)
 
 	memset(&abs, 0, sizeof(abs));
 
-	printf("raw_vendor -> %d\n", raw_vendor);
 	if (raw_vendor == MICROSOFT_VENDOR || raw_vendor == GAMESIR_VENDOR)
 	{
 

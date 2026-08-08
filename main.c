@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <tomlc17.h>
 
 #include "get.h"
 
@@ -53,9 +54,35 @@ int main (int argc, char *argv[])
 	Deadzone deadzone = {0};
 	AntiDeadzone anti_deadzone = {0};
 
-	// todo: read a .ini config file
 	if (argc == 1) 
 	{
+		// read toml default config file
+		toml_result_t result = toml_parse_file_ex("default.toml");
+		if (!result.ok)
+		{
+			printf("error when parsing toml file");
+			toml_free(result);
+			return 1;
+		}
+		
+		toml_datum_t dLS = toml_seek(result.toptab, "deadzone.radial_LS");
+		toml_datum_t dRS = toml_seek(result.toptab, "deadzone.radial_RS");
+		toml_datum_t adLS = toml_seek(result.toptab, "anti-deadzone.radial_LS");
+		toml_datum_t adRS = toml_seek(result.toptab, "anti-deadzone.radial_RS");
+
+		int64_t port_dLS = dLS.u.int64;
+		int64_t port_dRS = dRS.u.int64; 
+
+		int64_t port_adLS = adLS.u.int64; 
+		int64_t port_adRS = adRS.u.int64; 
+
+		deadzone.radial_LS = port_dLS;
+		deadzone.radial_RS = port_dRS;
+
+		anti_deadzone.radial_LS = port_adLS;
+		anti_deadzone.radial_RS = port_adRS;
+
+		toml_free(result);
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
 

@@ -1,0 +1,7 @@
+[deadzone]
+radial_RS = 0
+radial_LS = 0
+
+[anti-deadzone]
+radial_RS = 0
+radial_LS = 0
