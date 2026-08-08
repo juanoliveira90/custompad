@@ -29,7 +29,7 @@ int get_controllers_and_store_them_in_array()
 	{
 		if (strncmp(entry->d_name, "event", 5) == 0) 
 		{
-			char* name = "Unknown";
+			char name[64] = "Unknown";
 			unsigned long mask[ARR_SIZE(BTN_SOUTH)] = {0};
 			snprintf(path, sizeof(path), "/dev/input/%s", entry->d_name);
 			
