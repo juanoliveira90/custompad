@@ -15,7 +15,6 @@ void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
 void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone anti_deadzone);
 int open_raw_device_and_hide_it(char* path);
-int map_index_to_virtual(int index);
 int clamp_stick(long v);
 
 int main (int argc, char *argv[]) 
@@ -49,8 +48,9 @@ int main (int argc, char *argv[])
 	{
 		free(arr[i].name);
 		free(arr[i].path);
-		free(arr);
 	}
+	free(arr);
+
 	Deadzone deadzone = {0};
 	AntiDeadzone anti_deadzone = {0};
 
