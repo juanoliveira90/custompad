@@ -11,6 +11,7 @@
 Gamepad *arr = NULL;
 size_t arr_capacity = 1;
 
+AxesConfig ps_axis[] = {
     { ABS_X,      0, 255, 0, 0 },  // left stick X
     { ABS_Y,      0, 255, 0, 0 },  // left stick Y
     { ABS_RX,     0, 255, 0, 0 },  // right stick X
@@ -21,7 +22,7 @@ size_t arr_capacity = 1;
     { ABS_HAT0Y, -1,   1, 0, 0 },  // D-pad Y
 };
 
-struct { int code, min, max, fuzz, flat; } xb_axes[] = {
+AxesConfig xb_axis[] = {
     { ABS_X,     -32768, 32767, 16, 128 },
     { ABS_Y,     -32768, 32767, 16, 128 },
     { ABS_RX,    -32768, 32767, 16, 128 },
@@ -32,7 +33,7 @@ struct { int code, min, max, fuzz, flat; } xb_axes[] = {
     { ABS_HAT0Y,     -1,     1,  0,   0 },
 };
 
-struct { int code, min, max, fuzz, flat; } procon_axes[] = {
+AxesConfig procon_axis[] = {
     { ABS_X,  -32767, 32767, 250, 500 },  // left stick X
     { ABS_Y,  -32767, 32767, 250, 500 },  // left stick Y
     { ABS_RX, -32767, 32767, 250, 500 },  // right stick X
@@ -119,36 +120,36 @@ int create_controller(char* raw_path)
 	if (raw_vendor == MICROSOFT_VENDOR || raw_vendor == GAMESIR_VENDOR)
 	{
 
-		for (int i = 0; i < sizeof(xb_axes) / sizeof(xb_axes[0]); i++) {
-			abs.code = xb_axes[i].code;
-			abs.absinfo.minimum = xb_axes[i].min;
-			abs.absinfo.maximum = xb_axes[i].max;
-			abs.absinfo.fuzz    = xb_axes[i].fuzz;
-			abs.absinfo.flat    = xb_axes[i].flat;
+		for (int i = 0; i < sizeof(xb_axis) / sizeof(xb_axis[0]); i++) {
+			abs.code = xb_axis[i].code;
+			abs.absinfo.minimum = xb_axis[i].min;
+			abs.absinfo.maximum = xb_axis[i].max;
+			abs.absinfo.fuzz    = xb_axis[i].fuzz;
+			abs.absinfo.flat    = xb_axis[i].flat;
 			ioctl(fd, UI_ABS_SETUP, &abs);
 		}
 	}
 
 	else if (raw_vendor == SONY_VENDOR)
 	{
-		for (int i = 0; i < sizeof(ps_axes) / sizeof(ps_axes[0]); i++) {
-			abs.code = ps_axes[i].code;
-			abs.absinfo.minimum = ps_axes[i].min;
-			abs.absinfo.maximum = ps_axes[i].max;
-			abs.absinfo.fuzz    = ps_axes[i].fuzz;
-			abs.absinfo.flat    = ps_axes[i].flat;
+		for (int i = 0; i < sizeof(ps_axis) / sizeof(ps_axis[0]); i++) {
+			abs.code = ps_axis[i].code;
+			abs.absinfo.minimum = ps_axis[i].min;
+			abs.absinfo.maximum = ps_axis[i].max;
+			abs.absinfo.fuzz    = ps_axis[i].fuzz;
+			abs.absinfo.flat    = ps_axis[i].flat;
 			ioctl(fd, UI_ABS_SETUP, &abs);
 		}	
 	}
 
 	else if (raw_vendor == NINTENDO_VENDOR)
 	{
-		for (int i = 0; i < sizeof(procon_axes) / sizeof(procon_axes[0]); i++) {
-			abs.code = procon_axes[i].code;
-			abs.absinfo.minimum = procon_axes[i].min;
-			abs.absinfo.maximum = procon_axes[i].max;
-			abs.absinfo.fuzz    = procon_axes[i].fuzz;
-			abs.absinfo.flat    = procon_axes[i].flat;
+		for (int i = 0; i < sizeof(procon_axis) / sizeof(procon_axis[0]); i++) {
+			abs.code = procon_axis[i].code;
+			abs.absinfo.minimum = procon_axis[i].min;
+			abs.absinfo.maximum = procon_axis[i].max;
+			abs.absinfo.fuzz    = procon_axis[i].fuzz;
+			abs.absinfo.flat    = procon_axis[i].flat;
 			ioctl(fd, UI_ABS_SETUP, &abs);
 		}
 	}

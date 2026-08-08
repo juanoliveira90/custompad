@@ -34,7 +34,20 @@ typedef struct
     int axial_RS;
 } AntiDeadzone;
 
+typedef struct
+{
+	int code; 
+    int min; 
+    int max; 
+    int fuzz; 
+    int flat;
+} AxesConfig;
+
 extern Gamepad *arr;
+extern AxesConfig ps_axis[];
+extern AxesConfig xb_axis[];
+extern AxesConfig procon_axis[];
+
 extern size_t arr_capacity;
 
 void push(char* name, char* path);
