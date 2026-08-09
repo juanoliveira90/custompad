@@ -13,6 +13,8 @@
 #define STICK_MIN -32768
 
 int map[KEY_CNT];
+Deadzone deadzone = {0};
+AntiDeadzone anti_deadzone = {0};
 
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
@@ -20,6 +22,7 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone anti_de
 int open_raw_device_and_hide_it(char* path);
 int clamp_stick(long v);
 int normalize_axis(int raw, int center, int min, int max);
+void apply_config(toml_result_t result);
 
 void default_map()
 {
@@ -72,9 +75,6 @@ int main (int argc, char *argv[])
 	}
 	free(arr);
 
-	Deadzone deadzone = {0};
-	AntiDeadzone anti_deadzone = {0};
-
 	if (argc == 1) 
 	{
 		// read toml default config file
@@ -86,38 +86,7 @@ int main (int argc, char *argv[])
 			return 1;
 		}
 		
-		// deadzone & anti-deadzone
-		toml_datum_t dLS = toml_seek(result.toptab, "deadzone.radial_LS");
-		toml_datum_t dRS = toml_seek(result.toptab, "deadzone.radial_RS");
-		toml_datum_t adLS = toml_seek(result.toptab, "anti-deadzone.radial_LS");
-		toml_datum_t adRS = toml_seek(result.toptab, "anti-deadzone.radial_RS");
-
-		int64_t port_dLS = dLS.u.int64;
-		int64_t port_dRS = dRS.u.int64; 
-
-		int64_t port_adLS = adLS.u.int64; 
-		int64_t port_adRS = adRS.u.int64; 
-
-		deadzone.radial_LS = port_dLS;
-		deadzone.radial_RS = port_dRS;
-
-		anti_deadzone.radial_LS = port_adLS;
-		anti_deadzone.radial_RS = port_adRS;
-
-		// button remap
-		toml_datum_t keys = toml_get(result.toptab, "remap");
-		for (int i = 0; i < keys.u.tab.size; i++)
-		{
-			const char* name = keys.u.tab.key[i];
-			toml_datum_t value = keys.u.tab.value[i];
-
-			int pos = libevdev_event_code_from_name(EV_KEY, name);
-			int val = libevdev_event_code_from_name(EV_KEY, value.u.s);
-
-			map[pos] = val;
-		}
-
-		toml_free(result);
+		apply_config(result);
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
 
@@ -132,39 +101,7 @@ int main (int argc, char *argv[])
 			return 1;
 		}
 
-		// deadzone & anti-deadzone
-		toml_datum_t dLS = toml_seek(result.toptab, "deadzone.radial_LS");
-		toml_datum_t dRS = toml_seek(result.toptab, "deadzone.radial_RS");
-		toml_datum_t adLS = toml_seek(result.toptab, "anti-deadzone.radial_LS");
-		toml_datum_t adRS = toml_seek(result.toptab, "anti-deadzone.radial_RS");
-
-		int64_t port_dLS = dLS.u.int64;
-		int64_t port_dRS = dRS.u.int64; 
-
-		int64_t port_adLS = adLS.u.int64; 
-		int64_t port_adRS = adRS.u.int64; 
-
-		deadzone.radial_LS = port_dLS;
-		deadzone.radial_RS = port_dRS;
-
-		anti_deadzone.radial_LS = port_adLS;
-		anti_deadzone.radial_RS = port_adRS;
-
-		// button remap
-		toml_datum_t keys = toml_get(result.toptab, "remap");
-		for (int i = 0; i < keys.u.tab.size; i++)
-		{
-			const char* name = keys.u.tab.key[i];
-			toml_datum_t value = keys.u.tab.value[i];
-
-			int pos = libevdev_event_code_from_name(EV_KEY, name);
-			int val = libevdev_event_code_from_name(EV_KEY, value.u.s);
-
-			map[pos] = val;
-		}
-
-
-		toml_free(result);
+		apply_config(result);
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
 
@@ -311,6 +248,43 @@ void emit(int fd, int type, int code, int val)
 
    write(fd, &ie, sizeof(ie));
 }
+
+void apply_config(toml_result_t result)
+{
+	// deadzone & anti-deadzone
+	toml_datum_t dLS = toml_seek(result.toptab, "deadzone.radial_LS");
+	toml_datum_t dRS = toml_seek(result.toptab, "deadzone.radial_RS");
+	toml_datum_t adLS = toml_seek(result.toptab, "anti-deadzone.radial_LS");
+	toml_datum_t adRS = toml_seek(result.toptab, "anti-deadzone.radial_RS");
+
+	int64_t port_dLS = dLS.u.int64;
+	int64_t port_dRS = dRS.u.int64; 
+
+	int64_t port_adLS = adLS.u.int64; 
+	int64_t port_adRS = adRS.u.int64; 
+
+	deadzone.radial_LS = port_dLS;
+	deadzone.radial_RS = port_dRS;
+
+	anti_deadzone.radial_LS = port_adLS;
+	anti_deadzone.radial_RS = port_adRS;
+
+	// button remap
+	toml_datum_t keys = toml_get(result.toptab, "remap");
+	for (int i = 0; i < keys.u.tab.size; i++)
+	{
+		const char* name = keys.u.tab.key[i];
+		toml_datum_t value = keys.u.tab.value[i];
+
+		int pos = libevdev_event_code_from_name(EV_KEY, name);
+		int val = libevdev_event_code_from_name(EV_KEY, value.u.s);
+
+		map[pos] = val;
+	}
+
+	toml_free(result);
+}
+
 
 void show_inputs(int fd, ssize_t n, struct input_event ev) 
 {
