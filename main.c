@@ -87,6 +87,39 @@ int main (int argc, char *argv[])
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
 
+	if (argc == 2)
+	{
+		// read toml custom config file
+		toml_result_t result = toml_parse_file_ex(argv[1]);
+		if (!result.ok)
+		{
+			printf("error when parsing toml file");
+			toml_free(result);
+			return 1;
+		}
+
+		// deadzone & anti-deadzone
+		toml_datum_t dLS = toml_seek(result.toptab, "deadzone.radial_LS");
+		toml_datum_t dRS = toml_seek(result.toptab, "deadzone.radial_RS");
+		toml_datum_t adLS = toml_seek(result.toptab, "anti-deadzone.radial_LS");
+		toml_datum_t adRS = toml_seek(result.toptab, "anti-deadzone.radial_RS");
+
+		int64_t port_dLS = dLS.u.int64;
+		int64_t port_dRS = dRS.u.int64; 
+
+		int64_t port_adLS = adLS.u.int64; 
+		int64_t port_adRS = adRS.u.int64; 
+
+		deadzone.radial_LS = port_dLS;
+		deadzone.radial_RS = port_dRS;
+
+		anti_deadzone.radial_LS = port_adLS;
+		anti_deadzone.radial_RS = port_adRS;
+
+		toml_free(result);
+		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
+	}
+
 	return 0;
 }
 
