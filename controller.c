@@ -24,7 +24,6 @@ AxesConfig xb_axis[] = {
 
 int create_controller(char* raw_path)
 {
-	struct input_id raw_id;
 	struct uinput_setup usetup;
 	struct uinput_abs_setup abs;
 
@@ -34,23 +33,6 @@ int create_controller(char* raw_path)
 		printf("error when opening /dev/uinput\n");
 		return 1;
 	}
-
-	int raw = open(raw_path, O_RDONLY);
-	if (raw == -1) 
-	{
-		printf("error when opening %s\n", raw_path);
-		return 1;
-	}
-
-	if (ioctl(raw, EVIOCGID, &raw_id) < 0)
-	{
-		printf("failed to get device id via ioctl\n");
-		close(raw);
-		close(fd);
-		return 1;
-	}
-	unsigned short raw_vendor = raw_id.vendor;
-
 
 	ioctl(fd, UI_SET_EVBIT, EV_KEY);
 	ioctl(fd, UI_SET_KEYBIT, BTN_SOUTH);
@@ -112,5 +94,6 @@ int create_controller(char* raw_path)
 	
 	ioctl(fd, UI_DEV_SETUP, &usetup);
 	ioctl(fd, UI_DEV_CREATE);
+
 	return fd;
 }
