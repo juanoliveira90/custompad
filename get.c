@@ -66,10 +66,6 @@ int get_controllers_and_store_them_in_array()
 	}
 	closedir(dir);
 
-	if (count == 0)
-	{
-		printf("No controllers found.\n");
-	}
 	return count;
 }
 

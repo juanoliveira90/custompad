@@ -35,6 +35,13 @@ int main (int argc, char *argv[])
 	default_map();
 	int option = 0;
 	int count = get_controllers_and_store_them_in_array();
+	
+	if (count == 0)
+	{
+		printf("No controllers found.\n");
+		return 1;
+	}
+
 	if (count > 1)
 	{
 		printf("What controller do you want to use?\n");
