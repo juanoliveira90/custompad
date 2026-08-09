@@ -94,7 +94,7 @@ struct input_event read_input(int fd, ssize_t n, struct input_event ev)
 		perror("error reading event\n");
 		exit(EXIT_FAILURE);
 	}
-	if (ev.type == EV_KEY) 
+	if (ev.type == EV_KEY || ev.type == EV_ABS) 
 	{
 		printf("Key event - Code: %d, Value: %d\n", ev.code, ev.value);
 		return ev;

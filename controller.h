@@ -44,16 +44,8 @@ typedef struct
 } AxesConfig;
 
 extern Gamepad *arr;
-extern AxesConfig ps_axis[];
-extern AxesConfig xb_axis[];
-extern AxesConfig procon_axis[];
-
 extern size_t arr_capacity;
 
-void push(char* name, char* path);
-char* get_path(char* name);
-char* get_name(char* path);
-int get_index(char* path);
 int create_controller(char* raw_path);
 
 

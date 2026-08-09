@@ -11,17 +11,6 @@
 Gamepad *arr = NULL;
 size_t arr_capacity = 1;
 
-AxesConfig ps_axis[] = {
-    { ABS_X,      0, 255, 0, 0 },  // left stick X
-    { ABS_Y,      0, 255, 0, 0 },  // left stick Y
-    { ABS_RX,     0, 255, 0, 0 },  // right stick X
-    { ABS_RY,     0, 255, 0, 0 },  // right stick Y
-    { ABS_Z,      0, 255, 0, 0 },  // L2 analog trigger
-    { ABS_RZ,     0, 255, 0, 0 },  // R2 analog trigger
-    { ABS_HAT0X, -1,   1, 0, 0 },  // D-pad X
-    { ABS_HAT0Y, -1,   1, 0, 0 },  // D-pad Y
-};
-
 AxesConfig xb_axis[] = {
     { ABS_X,     -32768, 32767, 16, 128 },
     { ABS_Y,     -32768, 32767, 16, 128 },
@@ -32,16 +21,6 @@ AxesConfig xb_axis[] = {
     { ABS_HAT0X,     -1,     1,  0,   0 },
     { ABS_HAT0Y,     -1,     1,  0,   0 },
 };
-
-AxesConfig procon_axis[] = {
-    { ABS_X,  -32767, 32767, 250, 500 },  // left stick X
-    { ABS_Y,  -32767, 32767, 250, 500 },  // left stick Y
-    { ABS_RX, -32767, 32767, 250, 500 },  // right stick X
-    { ABS_RY, -32767, 32767, 250, 500 },  // right stick Y
-    { ABS_HAT0X, -1,      1,   0,   0 },  // D-pad X
-    { ABS_HAT0Y, -1,      1,   0,   0 },  // D-pad Y
-};
-
 
 int create_controller(char* raw_path)
 {
@@ -116,41 +95,13 @@ int create_controller(char* raw_path)
 
 	memset(&abs, 0, sizeof(abs));
 
-	if (raw_vendor == MICROSOFT_VENDOR || raw_vendor == GAMESIR_VENDOR)
-	{
-
-		for (int i = 0; i < sizeof(xb_axis) / sizeof(xb_axis[0]); i++) {
-			abs.code = xb_axis[i].code;
-			abs.absinfo.minimum = xb_axis[i].min;
-			abs.absinfo.maximum = xb_axis[i].max;
-			abs.absinfo.fuzz    = xb_axis[i].fuzz;
-			abs.absinfo.flat    = xb_axis[i].flat;
-			ioctl(fd, UI_ABS_SETUP, &abs);
-		}
-	}
-
-	else if (raw_vendor == SONY_VENDOR)
-	{
-		for (int i = 0; i < sizeof(ps_axis) / sizeof(ps_axis[0]); i++) {
-			abs.code = ps_axis[i].code;
-			abs.absinfo.minimum = ps_axis[i].min;
-			abs.absinfo.maximum = ps_axis[i].max;
-			abs.absinfo.fuzz    = ps_axis[i].fuzz;
-			abs.absinfo.flat    = ps_axis[i].flat;
-			ioctl(fd, UI_ABS_SETUP, &abs);
-		}	
-	}
-
-	else if (raw_vendor == NINTENDO_VENDOR)
-	{
-		for (int i = 0; i < sizeof(procon_axis) / sizeof(procon_axis[0]); i++) {
-			abs.code = procon_axis[i].code;
-			abs.absinfo.minimum = procon_axis[i].min;
-			abs.absinfo.maximum = procon_axis[i].max;
-			abs.absinfo.fuzz    = procon_axis[i].fuzz;
-			abs.absinfo.flat    = procon_axis[i].flat;
-			ioctl(fd, UI_ABS_SETUP, &abs);
-		}
+	for (int i = 0; i < sizeof(xb_axis) / sizeof(xb_axis[0]); i++) {
+		abs.code = xb_axis[i].code;
+		abs.absinfo.minimum = xb_axis[i].min;
+		abs.absinfo.maximum = xb_axis[i].max;
+		abs.absinfo.fuzz    = xb_axis[i].fuzz;
+		abs.absinfo.flat    = xb_axis[i].flat;
+		ioctl(fd, UI_ABS_SETUP, &abs);
 	}
 	
 	memset(&usetup, 0, sizeof(usetup));
@@ -162,42 +113,4 @@ int create_controller(char* raw_path)
 	ioctl(fd, UI_DEV_SETUP, &usetup);
 	ioctl(fd, UI_DEV_CREATE);
 	return fd;
-}
-
-void push(char* name, char* path)
-{
-    for (int i = 0; i < arr_capacity; i++)
-    {
-        if (arr[i].path == NULL)
-        {
-            arr[i].name = name;
-            arr[i].path = path;
-            return;
-        }
-    }
-    printf("You hit the number of controllers limit\n");
-    return;
-    
-}
-
-char* get_path(char* name)
-{
-    for (int i = 0; i < arr_capacity; i++)
-    {
-        if (strcmp(name, arr[i].name) == 0)
-        {
-            return arr[i].path;
-        }
-    }
-}
-
-char* get_name(char* path)
-{
-    for (int i = 0; i < arr_capacity; i++)
-    {
-        if (strcmp(path, arr[i].path) == 0)
-        {
-            return arr[i].name;
-        }
-    }
 }

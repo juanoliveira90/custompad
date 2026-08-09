@@ -16,6 +16,7 @@ void emit(int fd, int type, int code, int val);
 void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone anti_deadzone);
 int open_raw_device_and_hide_it(char* path);
 int clamp_stick(long v);
+int normalize_axis(int raw, int center, int min, int max);
 
 int main (int argc, char *argv[]) 
 {
@@ -111,8 +112,12 @@ int clamp_stick(long v)
 void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 {
 	ssize_t n;
+	struct input_id id;
 	struct input_event ev;
 	struct input_event res;
+	
+	ioctl(raw_fd, EVIOCGID, &id);
+
 	int LS_cached_x = 0;
 	int LS_cached_y = 0;
 
@@ -134,7 +139,7 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 	while (1)
 	{
 		res = read_input(raw_fd, n, ev);
-
+		
 		if (res.type == EV_KEY)
 		{
 			emit(fd, EV_KEY, res.code, res.value);
@@ -150,6 +155,9 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 				emit(fd, EV_SYN, SYN_REPORT, 0);
 				continue;
 			}
+
+			if (id.vendor == SONY_VENDOR)
+				res.value = normalize_axis(res.value, 128, 0, 255);
 
 			if (res.code == ABS_X) LS_cached_x = res.value;
 			if (res.code == ABS_Y) LS_cached_y = res.value;
@@ -202,6 +210,14 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 			}
 		}
 	}
+}
+
+int normalize_axis(int raw, int center, int min, int max)
+{
+	if (raw >= center)
+		return (raw - center) * 32767 / (max - center);
+
+	return (raw - center) * 32768 / (center - min);
 }
 
 void emit(int fd, int type, int code, int val)
