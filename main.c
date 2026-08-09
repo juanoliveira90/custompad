@@ -5,11 +5,14 @@
 #include <unistd.h>
 #include <math.h>
 #include <tomlc17.h>
+#include <libevdev-1.0/libevdev/libevdev.h>
 
 #include "get.h"
 
 #define STICK_MAX 32767
 #define STICK_MIN -32768
+
+int map[KEY_CNT];
 
 void show_inputs(int fd, ssize_t n, struct input_event ev);
 void emit(int fd, int type, int code, int val);
@@ -18,8 +21,18 @@ int open_raw_device_and_hide_it(char* path);
 int clamp_stick(long v);
 int normalize_axis(int raw, int center, int min, int max);
 
+void default_map()
+{
+	for (int i = 0; i < KEY_CNT; i++)
+	{
+		map[i] = i;
+	}
+	return;
+}
+
 int main (int argc, char *argv[]) 
 {
+	default_map();
 	int option = 0;
 	int count = get_controllers_and_store_them_in_array();
 	if (count > 1)
@@ -116,6 +129,20 @@ int main (int argc, char *argv[])
 		anti_deadzone.radial_LS = port_adLS;
 		anti_deadzone.radial_RS = port_adRS;
 
+		// button remap
+		toml_datum_t keys = toml_get(result.toptab, "remap");
+		for (int i = 0; i < keys.u.tab.size; i++)
+		{
+			const char* name = keys.u.tab.key[i];
+			toml_datum_t value = keys.u.tab.value[i];
+
+			int pos = libevdev_event_code_from_name(EV_KEY, name);
+			int val = libevdev_event_code_from_name(EV_KEY, value.u.s);
+
+			map[pos] = val;
+		}
+
+
 		toml_free(result);
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
 	}
@@ -175,7 +202,7 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 		
 		if (res.type == EV_KEY)
 		{
-			emit(fd, EV_KEY, res.code, res.value);
+			emit(fd, EV_KEY, map[res.code], res.value);
 			emit(fd, EV_SYN, SYN_REPORT, 0);
 		}
 		if (res.type == EV_ABS)
