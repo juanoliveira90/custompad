@@ -78,7 +78,7 @@ int main (int argc, char *argv[])
 	if (argc == 1) 
 	{
 		// read toml default config file
-		toml_result_t result = toml_parse_file_ex("default.toml");
+		toml_result_t result = toml_parse_file_ex("../default.toml");
 		if (!result.ok)
 		{
 			printf("error when parsing toml file");
@@ -86,6 +86,7 @@ int main (int argc, char *argv[])
 			return 1;
 		}
 		
+		// deadzone & anti-deadzone
 		toml_datum_t dLS = toml_seek(result.toptab, "deadzone.radial_LS");
 		toml_datum_t dRS = toml_seek(result.toptab, "deadzone.radial_RS");
 		toml_datum_t adLS = toml_seek(result.toptab, "anti-deadzone.radial_LS");
@@ -102,6 +103,19 @@ int main (int argc, char *argv[])
 
 		anti_deadzone.radial_LS = port_adLS;
 		anti_deadzone.radial_RS = port_adRS;
+
+		// button remap
+		toml_datum_t keys = toml_get(result.toptab, "remap");
+		for (int i = 0; i < keys.u.tab.size; i++)
+		{
+			const char* name = keys.u.tab.key[i];
+			toml_datum_t value = keys.u.tab.value[i];
+
+			int pos = libevdev_event_code_from_name(EV_KEY, name);
+			int val = libevdev_event_code_from_name(EV_KEY, value.u.s);
+
+			map[pos] = val;
+		}
 
 		toml_free(result);
 		emit_configured(fd, raw_fd, deadzone, anti_deadzone);
