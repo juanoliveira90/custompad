@@ -46,7 +46,6 @@ typedef struct
 extern Gamepad *arr;
 extern size_t arr_capacity;
 
-int create_controller(char* raw_path);
-
+int create_controller();
 
 #endif

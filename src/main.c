@@ -54,7 +54,7 @@ int main (int argc, char *argv[])
 		scanf("%d", &option);
 	}
 	
-	int fd = create_controller(arr[option].path);
+	int fd = create_controller();
 	if (fd < 0)
 	{
 		perror("open");

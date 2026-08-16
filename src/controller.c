@@ -22,7 +22,7 @@ AxesConfig xb_axis[] = {
     { ABS_HAT0Y,     -1,     1,  0,   0 },
 };
 
-int create_controller(char* raw_path)
+int create_controller()
 {
 	struct uinput_setup usetup;
 	struct uinput_abs_setup abs;
