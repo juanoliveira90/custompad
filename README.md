@@ -22,14 +22,12 @@ radial_RS = 0      # right stick radial anti-deadzone
 
 [remap]
 # here you will use the names defined in linux input-event-codes.h.
-# you can only remap to controller buttons, 
-# trying to set tomething like BTN_X = "KEY_F12" won't work.
 # (https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h) 
 BTN_X = "BTN_NORTH"  
 BTN_Y  = "BTN_WEST"
 ```
 
-Here's a list of available buttons:
+Here's a helpful list of available buttons:
 | Category | Event codes |
 |---|---|
 | Face buttons | `BTN_SOUTH`, `BTN_EAST`, `BTN_NORTH`, `BTN_WEST` |
@@ -39,6 +37,8 @@ Here's a list of available buttons:
 | Digital D-pad | `BTN_DPAD_UP`, `BTN_DPAD_DOWN`, `BTN_DPAD_LEFT`, `BTN_DPAD_RIGHT` |
 | Rear grips/paddles | `BTN_GRIPL`, `BTN_GRIPL2`, `BTN_GRIPR`, `BTN_GRIPR2` |
 | Extra | `BTN_TRIGGER_HAPPY`, `BTN_TRIGGER_HAPPY1` |
+
+You can also map the controller to keyboard events.
 ****
 ## Dependencies
 

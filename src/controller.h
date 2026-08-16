@@ -47,5 +47,6 @@ extern Gamepad *arr;
 extern size_t arr_capacity;
 
 int create_controller();
+int create_keyboard();
 
 #endif

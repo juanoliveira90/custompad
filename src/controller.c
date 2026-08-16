@@ -97,3 +97,31 @@ int create_controller()
 
 	return fd;
 }
+
+int create_keyboard()
+{
+	struct uinput_setup usetup;
+
+	int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+	if (fd == -1) 
+	{
+		printf("error when opening /dev/uinput\n");
+		return 1;
+	}
+
+	
+	ioctl(fd, UI_SET_EVBIT, EV_KEY);
+	for (int i = 0; i < BTN_GAMEPAD; i++)
+		ioctl(fd, UI_SET_KEYBIT, i);
+	
+	memset(&usetup, 0, sizeof(usetup));
+	usetup.id.bustype = BUS_USB;
+	usetup.id.vendor = 0x1234;
+	usetup.id.product = 0x5678;
+	strcpy(usetup.name, "Virtual Keyboard");
+	
+	ioctl(fd, UI_DEV_SETUP, &usetup);
+	ioctl(fd, UI_DEV_CREATE);
+
+	return fd;
+}

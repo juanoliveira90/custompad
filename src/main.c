@@ -134,6 +134,7 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 	struct input_event ev;
 	struct input_event res;
 	
+	int fd_kb = create_keyboard();
 	ioctl(raw_fd, EVIOCGID, &id);
 
 	int LS_cached_x = 0;
@@ -160,6 +161,12 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 		
 		if (res.type == EV_KEY)
 		{
+			// less than btn_gamepad means it's a normal keyboard code
+			if (map[res.code] < BTN_GAMEPAD)
+			{
+				emit(fd_kb, EV_KEY, map[res.code], res.value);
+				emit(fd_kb, EV_SYN, SYN_REPORT, 0);
+			}
 			emit(fd, EV_KEY, map[res.code], res.value);
 			emit(fd, EV_SYN, SYN_REPORT, 0);
 		}
