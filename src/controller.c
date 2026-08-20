@@ -109,7 +109,6 @@ int create_keyboard()
 		return 1;
 	}
 
-	
 	ioctl(fd, UI_SET_EVBIT, EV_KEY);
 	for (int i = 0; i < BTN_GAMEPAD; i++)
 		ioctl(fd, UI_SET_KEYBIT, i);

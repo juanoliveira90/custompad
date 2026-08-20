@@ -13,6 +13,8 @@
 #define STICK_MIN -32768
 
 int map[KEY_CNT];
+int map_abs[ABS_CNT];
+
 Deadzone deadzone = {0};
 AntiDeadzone anti_deadzone = {0};
 
@@ -30,6 +32,10 @@ void default_map()
 	{
 		map[i] = i;
 	}
+	for (int i = 0; i < ABS_CNT; i++)
+	{
+		map_abs[i] = i;
+	}
 	return;
 }
 
@@ -38,7 +44,7 @@ int main (int argc, char *argv[])
 	default_map();
 	int option = 0;
 	int count = get_controllers_and_store_them_in_array();
-	
+
 	if (count == 0)
 	{
 		printf("No controllers found.\n");
@@ -176,8 +182,17 @@ void emit_configured(int fd, int raw_fd, Deadzone deadzone, AntiDeadzone A)
 			// so they pass through untouched
 			if (res.code != ABS_X && res.code != ABS_Y && res.code != ABS_RX && res.code != ABS_RY)
 			{
-				emit(fd, EV_ABS, res.code, res.value);
-				emit(fd, EV_SYN, SYN_REPORT, 0);
+				// this means it was remapepd
+				if (map_abs[res.code] != res.code)
+				{
+					emit(fd_kb, EV_KEY, map_abs[res.code], res.value);
+					emit(fd_kb, EV_SYN, SYN_REPORT, 0);
+				}
+				else
+				{
+					emit(fd, EV_ABS, res.code, res.value);
+					emit(fd, EV_SYN, SYN_REPORT, 0);
+				}
 				continue;
 			}
 
@@ -280,13 +295,27 @@ void apply_config(toml_result_t result)
 	toml_datum_t keys = toml_get(result.toptab, "remap");
 	for (int i = 0; i < keys.u.tab.size; i++)
 	{
+		int pos;
+		int val;
 		const char* name = keys.u.tab.key[i];
 		toml_datum_t value = keys.u.tab.value[i];
-
-		int pos = libevdev_event_code_from_name(EV_KEY, name);
-		int val = libevdev_event_code_from_name(EV_KEY, value.u.s);
-
-		map[pos] = val;
+		printf("name -> %s\n", name);
+		
+		if (strncmp(name, "ABS", 3) == 0)
+		{
+			pos = libevdev_event_code_from_name(EV_ABS, name);
+			val = libevdev_event_code_from_name(EV_KEY, value.u.s);
+			printf("pos -> %d\n", pos);
+			printf("val -> %d\n", val);
+			map_abs[pos] = val;
+		}
+		else
+		{
+			pos = libevdev_event_code_from_name(EV_KEY, name);
+			val = libevdev_event_code_from_name(EV_KEY, value.u.s);
+			map[pos] = val;
+		}
+		
 	}
 
 	toml_free(result);
